@@ -10,12 +10,12 @@ model: inherit
 일반적인 스타일이 아니라 이 프로젝트 고유의 규칙으로 변경 파일을 점검하세요:
 
 <!--
-doo_kbo_app 예시 항목 (실제 아키텍처에 맞게 다시 쓸 것):
+doo_kbo_scraping_server 예시 항목 (실제 아키텍처에 맞게 다시 쓸 것):
 
-1. **레이어링** — domain 레이어는 프레임워크, data, presentation 어느 것도 import하면 안 됩니다. 이런 import가 있으면 즉시 지적합니다.
-2. **에러 처리** — data layer 코드는 예외를 던져야 하며, 이를 Result<T>로 변환하는 곳은 data/repositories뿐이어야 합니다.
-3. **상태 관리** — presentation에는 지정된 상태 관리 방식만 있어야 합니다.
-4. **라우팅** — 새 화면이 추가되면 라우터에 등록되어 있는지 확인합니다.
+1. **레이어링** — domain 레이어는 Nest 프레임워크, application, infrastructure 어느 것도 import하면 안 됩니다. 이런 import가 있으면 즉시 지적합니다.
+2. **에러 처리** — infrastructure layer 코드는 예외를 던져야 하며, 이를 적절한 예외/응답 형태로 변환하는 곳은 infrastructure/repositories 또는 exception filter에서 처리해야 합니다.
+3. **DI/Provider** — application 레이어는 Nest container에 등록된 provider만 사용해야 합니다.
+4. **모듈 등록** — 새 module이 추가되면 app.module 또는 상위 module에 등록되어 있는지 확인합니다.
 5. **린트 규칙** — `{{LINT_CMD}}`가 개념적으로 잡아낼 위반 사항을 눈으로 확인합니다.
 6. **템플릿 이탈** — 새 모듈이 추가됐다면 템플릿 모듈 구조를 따랐는지 확인합니다.
 -->
