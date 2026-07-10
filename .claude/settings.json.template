@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash({{INSTALL_CMD}})",
+      "Bash(git init *)",
+      "Bash({{FORMAT_CHECK_CMD}})",
+      "Bash({{LINT_CMD}})",
+      "Bash({{TEST_CMD}})",
+      "Bash({{RUN_CMD}})"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-generated-edit.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-on-save.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

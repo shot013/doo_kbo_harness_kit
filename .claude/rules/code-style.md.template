@@ -1,0 +1,19 @@
+# 코드 스타일 규칙 (항상 적용)
+
+{{LINT_CONFIG_FILE}}에 정의된 규칙을 코드 작성 시점부터 지킨다 (`{{LINT_CMD}}` 실행 후 고치지 않는다):
+
+{{LINT_RULE_SUMMARY}}
+
+<!--
+doo_kbo_app 예시 (analysis_options.yaml 기준):
+- 모든 함수/메서드에 반환 타입을 명시한다 (`always_declare_return_types`).
+- `print()` 대신 로깅을 쓰거나 디버그 코드를 남기지 않는다 (`avoid_print`).
+- import는 상대 경로로 작성한다 (`prefer_relative_imports`).
+- 문자열은 작은따옴표를 쓴다 (`prefer_single_quotes`).
+- 가능하면 `const` 생성자/선언을 쓴다.
+- 지역 변수는 재할당하지 않는 한 `final`로 선언한다.
+- 여러 줄 인자/리스트 끝에 trailing comma를 붙인다.
+- `Future`를 반환하는 호출은 `await`하거나 명시적으로 무시한다.
+-->
+
+- 코드를 수정한 뒤에는 `{{LINT_CMD}}`가 경고 없이 통과하는 것을 목표로 한다.

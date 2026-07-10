@@ -1,0 +1,55 @@
+# CLAUDE.md
+
+이 파일은 이 저장소에서 작업하는 Claude Code(claude.ai/code)에게 제공되는 가이드입니다.
+
+## 명령어
+
+```
+{{INSTALL_CMD}}                                   # 의존성 설치
+{{RUN_CMD}}                                        # 앱 실행
+{{FORMAT_CHECK_CMD}}  # 포맷 체크 (CI에서 사용; 플래그를 빼면 자동 포맷)
+{{LINT_CMD}}                                     # 정적 분석 (경고 없이 통과해야 함)
+{{TEST_CMD}}                                        # 전체 테스트 실행
+{{TEST_SINGLE_CMD}}                  # 단일 테스트 파일 실행
+{{TEST_NAME_CMD}} # 이름으로 단일 테스트 실행
+```
+
+CI(`.github/workflows/ci.yaml`)는 `main`/`develop`으로의 모든 PR/push에서 포맷 체크 → `{{LINT_CMD}}` → `{{TEST_CMD}}` 순으로 실행합니다. 병합 전 세 가지 모두 로컬에서 통과해야 합니다.
+
+## 아키텍처
+
+{{ARCHITECTURE_SUMMARY}}
+
+<!--
+doo_kbo_app 예시:
+Feature-first Clean Architecture. 상태 관리/DI는 Riverpod, 라우팅은 go_router, 네트워크는 dio, 값 동등성은 equatable을 사용합니다.
+
+{{SRC_DIR}}
+  main.dart / app.dart   # 앱 엔트리포인트
+  core/                   # 공통 인프라 (에러, 네트워크, 라우터, 유틸)
+  features/{name}/
+    domain/     # entities, repositories(추상), usecases — 프레임워크 무관
+    data/       # models, datasources, repositories(구현)
+    presentation/ # UI, 상태 관리
+
+데이터 흐름과 레이어링 규칙은 실제 프로젝트에 맞게 다시 쓰세요.
+-->
+
+`{{SRC_DIR}}features/example/`(또는 그에 준하는 위치)은 실제로 동작하는 참고 구현체이자 새 feature를 만들 때 복사할 템플릿입니다.
+
+**새 feature 체크리스트** (`docs/ARCHITECTURE.md` 참고):
+1. 템플릿 모듈을 새 이름으로 복사한다.
+2. 도메인/핵심 로직부터 작성한다.
+3. 데이터/인프라 레이어에서 인터페이스를 구현한다.
+4. 프레젠테이션/UI 레이어를 연결한다.
+5. 라우팅/등록 지점에 새 모듈을 등록한다.
+
+## 주요 린트 규칙
+
+{{LINT_RULE_SUMMARY}}
+
+## 협업 (`CONTRIBUTING.md`)
+
+- 브랜치: `main` (보호됨, PR 전용), `develop` (통합), `feature/{issue}-{desc}`, `fix/{issue}-{desc}`, `chore/{desc}`, `release/{version}`.
+- 커밋: Conventional Commits — `<type>(<scope>): <subject>`, 명령형, 소문자 시작, 마침표 없음. 타입: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`.
+- PR 하나 = 리뷰 가능한 단위 하나; 최소 1명 승인 필요; squash merge; PR 열기 전 로컬에서 `{{LINT_CMD}}`와 `{{TEST_CMD}}`가 통과해야 함.

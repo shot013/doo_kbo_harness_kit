@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash({{TEST_CMD}})",
+      "Skill(run)",
+      "Skill(run:*)"
+    ]
+  }
+}

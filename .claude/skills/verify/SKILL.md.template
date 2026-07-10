@@ -1,0 +1,19 @@
+---
+name: verify
+description: Verify a code change in {{PROJECT_NAME}} by running the same checks as CI (format, lint, test). Use before considering a change done, or when asked to verify/check the project builds correctly.
+---
+
+# 변경 검증
+
+CI(`.github/workflows/ci.yaml`)와 동일한 순서로 실행한다:
+
+```
+{{FORMAT_CHECK_CMD}}
+{{LINT_CMD}}
+{{TEST_CMD}}
+```
+
+- 포맷 체크가 변경이 필요하다고 하면 `{{FORMAT_FIX_CMD}}`를 실행해 정리한다.
+- `{{LINT_CMD}}`는 경고 없이 통과해야 한다.
+- 특정 파일/테스트만 검증하려면 `{{TEST_SINGLE_CMD}}` 또는 `{{TEST_NAME_CMD}}`를 사용한다.
+- UI/화면 변경은 정적 검증만으로 충분하지 않다. 가능하면 `{{RUN_CMD}}`로 실제 동작을 확인한다.

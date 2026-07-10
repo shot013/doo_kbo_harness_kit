@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: {{CI_SETUP_ACTION}}
+        with:
+          {{CI_SETUP_WITH}}
+
+      - name: Install dependencies
+        run: {{INSTALL_CMD}}
+
+      - name: Verify formatting
+        run: {{FORMAT_CHECK_CMD}}
+
+      - name: Lint
+        run: {{LINT_CMD}}
+
+      - name: Test
+        run: {{TEST_CMD}}
