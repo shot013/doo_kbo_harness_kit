@@ -36,6 +36,7 @@ chore: bump dependency to latest
 
 ## PR 규칙
 
+- PR의 기본 target branch는 `develop`입니다. `main`으로의 병합은 release 브랜치에서만 예외적으로 진행합니다.
 - PR 하나 = 리뷰 가능한 단위 하나. 여러 기능을 한 PR에 묶지 않습니다.
 - PR 설명에는 변경 이유와 테스트 방법을 반드시 포함합니다 (템플릿 참고).
 - 최소 1명 이상의 승인 후 병합합니다.
