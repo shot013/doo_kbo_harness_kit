@@ -23,6 +23,7 @@ Claude Code는 이 내용을 이미 알고 작업을 시작합니다.
 - `.claude/rules/architecture.md` — 레이어링 강제 규칙
 - `.claude/rules/code-style.md` — 린트 규칙을 코드 작성 시점부터 준수
 - `.claude/rules/git-workflow.md` — 브랜치명, 커밋 메시지, PR 규칙
+- `.claude/rules/api-docs-sync.md` — 백엔드 API 변경 시 관련 문서를 같은 PR에서 함께 업데이트
 
 규칙을 바꾸거나 추가하고 싶으면 이 파일들을 직접 수정하거나, Claude Code에게
 "이런 규칙을 rules에 추가해줘"라고 요청하면 됩니다.
