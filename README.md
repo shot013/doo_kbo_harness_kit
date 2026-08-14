@@ -58,6 +58,7 @@ Claude Code는 다음 네 가지 층으로 저장소별 작업 방식을 학습�
 | `{{LINT_CONFIG_FILE}}` | 린트 설정 파일명 | `eslint.config.js` |
 | `{{TEMPLATE_MODULE_PATH}}` | 새 모듈 작성 시 복사할 템플릿 모듈 경로 | `modules/example/` |
 | `{{REVIEWER_AGENT_NAME}}` | 리뷰 서브에이전트 이름 (스택에 맞게) | `nest-reviewer` |
+| `{{API_DOC_PATH}}` | 백엔드 API 변경 시 함께 갱신해야 하는 API 문서 경로 | `docs/API.md` (또는 Swagger UI 경로) |
 
 ## 파일별 역할
 
@@ -67,7 +68,7 @@ Claude Code는 다음 네 가지 층으로 저장소별 작업 방식을 학습�
 - `.claude/settings.json.template` — 팀 공유 훅/권한 설정.
 - `.claude/settings.local.json.example` — 개인용 권한 오버라이드 예시 (`.gitignore` 대상).
 - `.claude/hooks/*.sh.template` — 저장 시 자동 포맷 / 생성 파일 수정 차단 훅.
-- `.claude/rules/*.md` — 아키텍처/코드스타일/git 규칙. `git-workflow.md.template`는 언어 중립적이지만 린트/테스트 명령 플레이스홀더 2개만 치환하면 그대로 사용 가능.
+- `.claude/rules/*.md` — 아키텍처/코드스타일/git/API 문서 동기화 규칙. `git-workflow.md.template`는 언어 중립적이지만 린트/테스트 명령 플레이스홀더 2개만 치환하면 그대로 사용 가능. `api-docs-sync.md.template`는 백엔드 API가 있는 프로젝트에서, 백엔드 API 변경 시 관련 문서를 같은 PR에서 함께 업데이트하도록 강제한다.
 - `.claude/skills/verify/SKILL.md.template` — CI와 동일한 순서로 로컬 검증.
 - `.claude/skills/scaffold-module/SKILL.md.template` — 템플릿 모듈을 복사해 새 기능을 만드는 절차 (아키텍처에 맞게 재작성 필요).
 - `.claude/agents/code-reviewer.md.template` — 프로젝트 고유 컨벤션 리뷰 서브에이전트.

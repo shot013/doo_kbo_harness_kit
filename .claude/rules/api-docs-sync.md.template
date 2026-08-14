@@ -1,0 +1,21 @@
+# API 문서 동기화 규칙 (항상 적용)
+
+백엔드 API(엔드포인트, 요청/응답 스키마, 인증/권한 방식 등)를 변경했다면 코드만 바꾸고
+끝내지 않는다 — 같은 PR 안에서 관련 문서를 반드시 함께 업데이트한다. 문서 업데이트를
+"나중에 따로" 처리하는 별도 PR/티켓으로 미루지 않는다.
+
+다음 문서들을 확인하고, 영향받는 항목이 있으면 갱신한다:
+- {{API_DOC_PATH}} (OpenAPI/Swagger 스펙, API 레퍼런스 문서 등)
+- `CLAUDE.md`의 아키텍처/명령어 요약 — 엔드포인트·모듈 구조가 바뀌었다면
+- `docs/ARCHITECTURE.md` — 레이어링이나 데이터 흐름이 바뀌었다면
+- README나 클라이언트(프론트엔드) 쪽과 공유하는 API 사용 예시
+
+<!--
+doo_kbo_scraping_server 예시:
+- Controller의 Swagger 데코레이터(`@ApiOperation`, `@ApiResponse`, `@ApiProperty` 등)를
+  실제 동작과 일치하도록 갱신한다.
+- DTO 필드가 추가/변경되면 관련 예시 payload와 Postman collection(있다면)도 함께 수정한다.
+- Breaking change(응답 형태 변경, 필드 삭제 등)는 CHANGELOG 또는 릴리즈 노트에도 남긴다.
+-->
+
+문서 업데이트 없이 API 변경만 포함된 PR은 리뷰에서 반려한다.
