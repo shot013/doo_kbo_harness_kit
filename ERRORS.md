@@ -24,4 +24,14 @@
 
 ---
 
-_(아직 기록된 에러 없음)_
+### [2026-08-23] `/records/batters`, `/records/pitchers`의 `playerId`가 특정 선수만 null
+
+**증상**: `/records/batters`, `/records/pitchers` 응답 중 일부 항목의 `playerId`가 `null`로 내려옴 (예: LT 황성빈).
+
+**원인**: `records.service.ts`는 `teamCode + playerName` 키로 `players` 테이블(로스터 스크래핑 결과, `roster.scraper.ts`)에서 `playerId`를 찾는다. 시즌 기록(`season-stats`)에는 해당 선수가 팀 소속으로 집계되지만, KBO 공식 로스터 검색 페이지(`Player/Search.aspx`, `ROSTER_SOURCE_URL`)에는 애초에 그 선수가 없는 경우가 있다 (상무/군 복무 등으로 1군 로스터 검색에서 빠지는 사례로 추정). 매칭 로직이나 스크래퍼 버그가 아니라 KBO 소스 데이터 자체의 결손이며, `players.service.ts:56-57`, `:82-83`의 `?? null` 폴백은 설계대로 동작한 것.
+
+**확인 방법**: 운영 서버 API를 직접 호출해 null 비율을 확인(타자 30명 중 1명만 null, 투수는 0명)한 뒤, `roster.scraper.ts`와 동일한 폼 제출 로직으로 KBO `Player/Search.aspx`를 LT 팀으로 직접 조회해 5페이지(100명) 전체에 해당 선수가 없음을 재현 — 스크래퍼 파싱 문제가 아니라 소스 페이지 자체의 누락임을 확인.
+
+**해결**: 코드 수정 없음. 정상적으로 발생 가능한 케이스(로스터 미등록 선수)로 판단.
+
+**재발 방지**: `playerId: null`은 "로스터 검색에 없는 선수"에 대한 정상 폴백임을 문서화. 이 케이스가 잦아지면 로스터 소스를 보강하거나(예: 말소/군복무 선수 별도 매핑) 프론트에서 null을 별도 처리하는 방안을 검토.
