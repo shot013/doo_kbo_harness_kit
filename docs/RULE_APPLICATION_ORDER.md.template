@@ -1,0 +1,86 @@
+# 규칙 적용 순서
+
+`docs/CLAUDE_CODE.md.template`이 "어떤 층이 무엇을 하는지"를 정리한 문서라면, 이 문서는
+"실제 작업 중 어떤 시점에 어떤 순서로 발동되는지"를 정리한 문서입니다.
+
+이 킷은 현재 프론트/서버/DB/인프라가 별도 레이어로 나뉘어 있지 않고, 단일 백엔드
+모듈(`application` / `domain` / `infrastructure`) 구조를 전제로 합니다. 그래서 아래
+순서는 레이어별이 아니라 **작업 단계(세션 시작 → 코딩 → 커밋 전 → PR → CI)** 기준입니다.
+프론트/DB/인프라가 실제로 분리된 프로젝트에 이 킷을 적용한다면, 2~3단계를 레이어마다
+반복하는 식으로 확장하면 됩니다 (맨 아래 "레이어가 여러 개일 때" 참고).
+
+## 0. 세션 시작 시 — 항상, 자동
+
+사람이 아무것도 하지 않아도 Claude Code가 컨텍스트에 이미 로드한 상태로 시작합니다.
+
+1. `CLAUDE.md` — 빌드/테스트/린트 명령, 아키텍처 요약
+2. `.claude/rules/architecture.md` — 레이어링 강제 규칙
+3. `.claude/rules/code-style.md` — 린트 규칙
+4. `.claude/rules/git-workflow.md` — 브랜치/커밋/PR 규칙
+5. `.claude/rules/api-docs-sync.md` — API 변경 시 문서 동기화 규칙
+
+→ 이 시점부터 아래 모든 단계에서 이 규칙들이 배경으로 계속 적용됩니다.
+
+## 1. 새 기능/모듈 작업 시작 시
+
+- Claude가 "새 모듈이 필요하다"고 판단하거나 `/scaffold-module`로 직접 호출하면
+  **scaffold-module skill**이 실행됩니다.
+- 이 skill은 `architecture.md`의 레이어링 규칙을 그대로 따라 템플릿 모듈
+  (`{{TEMPLATE_MODULE_PATH}}`)을 복사합니다 → domain → infrastructure → application
+  순으로 작성.
+
+## 2. 코드 작성/수정 중 — 자동
+
+- 파일을 수정할 때마다 `code-style.md` 규칙이 적용됩니다.
+- 저장 즉시 **format-on-save hook**이 자동 실행됩니다 (사람 개입 없음).
+- 생성 파일(`{{GENERATED_DIR_PATTERN}}`)을 수정하려 하면 **block-generated-edit hook**이
+  차단합니다.
+
+## 3. 변경 완료 후, 커밋 전
+
+1. 백엔드 API를 건드렸다면 `api-docs-sync.md` 규칙에 따라 `{{API_DOC_PATH}}`를 같은 작업
+   안에서 함께 갱신해야 합니다.
+2. Claude가 필요하다고 판단하거나 "리뷰해줘"라고 요청하면 **`{{REVIEWER_AGENT_NAME}}` subagent**가
+   레이어링 위반/컨벤션 위반을 점검합니다.
+3. `/verify` skill로 CI와 동일한 순서(포맷 체크 → 린트 → 테스트)를 로컬에서 재현해
+   병합 전 실패를 미리 잡습니다.
+
+## 4. 커밋 / PR
+
+- `git-workflow.md`의 브랜치명·커밋 메시지(Conventional Commits) 규칙 적용
+- PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md` 사용
+- PR 하나 = 리뷰 가능한 단위 하나, 최소 1명 승인 필요
+
+## 5. PR 병합 전 — 원격, 자동 (`.github/workflows/ci.yaml`)
+
+3단계에서 `/verify`가 로컬에서 미리 재현한 것과 **동일한 순서**로 원격에서 다시 실행됩니다:
+
+```
+format check → {{LINT_CMD}} → {{TEST_CMD}}
+```
+
+세 단계 모두 통과해야 병합 가능합니다.
+
+## 이 순서와 무관하게, 계속 — `MEMORY.md` / `ERRORS.md`
+
+특정 단계에 묶여 있지 않고 작업 전반에 걸쳐 있습니다.
+
+- 세션 시작 시 읽어서 "왜 지금 이 상태인지" 파악
+- 코드/git 히스토리로 알 수 없는 결정이나 재발 에러가 생기면 그때그때 기록
+
+## 레이어가 여러 개일 때 (프론트/서버/DB/인프라 분리 프로젝트)
+
+이 킷은 백엔드 단일 모듈 구조를 전제로 하지만, 실제 프로젝트가 프론트/서버/DB/인프라를
+저장소(또는 디렉터리) 단위로 분리하고 있다면 1~3단계를 레이어마다 독립적으로 반복하는 게
+자연스럽습니다.
+
+| 레이어 | 1단계(스캐폴딩) | 2단계(작성 순서) | 3단계(검증) |
+|---|---|---|---|
+| 프론트 | 화면/컴포넌트 템플릿 복사 | API 계약 확인 → 상태/훅 → 컴포넌트 | 타입체크 → lint → 컴포넌트 테스트 |
+| 서버 | `{{TEMPLATE_MODULE_PATH}}` 복사 | domain → infrastructure → application | `{{LINT_CMD}}` → `{{TEST_CMD}}` |
+| DB | 마이그레이션 템플릿 복사 | 스키마 변경 → 마이그레이션 스크립트 → 리포지토리 반영 | 마이그레이션 dry-run → 리포지토리 테스트 |
+| 인프라 | IaC 모듈 템플릿 복사 | 변경 계획(plan) → 리소스 정의 → 배포 | `plan` diff 리뷰 → 적용 전 승인 |
+
+레이어 간 순서(예: DB 스키마 변경 → 서버 리포지토리 → 프론트 API 연동)는 프로젝트마다
+다르므로, 이 킷을 프로젝트에 적용할 때 `.claude/rules/architecture.md`에 실제 의존 방향을
+명시하는 것을 권장합니다.

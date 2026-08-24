@@ -32,6 +32,7 @@ Claude Code는 다음 네 가지 층으로 저장소별 작업 방식을 학습�
 - `.github/workflows/ci.yaml.template` — format → lint → test 3단계 CI.
 - `.github/PULL_REQUEST_TEMPLATE.md` — 언어 중립적이라 그대로 사용 가능.
 - `docs/CLAUDE_CODE.md.template` — 위 네 층이 어떻게 맞물려 자동으로 돌아가는지 팀원에게 설명하는 문서.
+- `docs/RULE_APPLICATION_ORDER.md.template` — 위 네 층이 세션 시작 → 코딩 → 커밋 전 → PR → CI 중 어느 시점에, 어떤 순서로 발동되는지 정리한 문서. 프론트/서버/DB/인프라가 레이어로 분리된 프로젝트라면 확장하는 방법도 포함.
 
 ## 적용 방법
 
