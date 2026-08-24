@@ -17,6 +17,23 @@ Claude Code는 다음 네 가지 층으로 저장소별 작업 방식을 학습�
 | Hooks | `.claude/settings.json`, `.claude/hooks/*.sh` | 완전 자동 (파일 저장 등 이벤트 훅) |
 | Subagent | `.claude/agents/*.md` | 필요 시 자동 위임, 또는 직접 요청 |
 
+## 파일별 역할
+
+- `CLAUDE.md.template` — 매 세션 자동 로드되는 최상위 가이드 (명령어, 아키텍처 요약).
+- `CONTRIBUTING.md.template` — 브랜치/커밋/PR 규칙 (사람 + Claude 공용).
+- `MEMORY.md`, `ERRORS.md` — 코드/git 히스토리로 알 수 없는 맥락과 재발 에러를 쌓는 빈 템플릿. 내용 자체는 프로젝트 중립적이라 치환 없이 그대로 복사.
+- `.claude/settings.json.template` — 팀 공유 훅/권한 설정.
+- `.claude/settings.local.json.example` — 개인용 권한 오버라이드 예시 (`.gitignore` 대상).
+- `.claude/hooks/*.sh.template` — 저장 시 자동 포맷 / 생성 파일 수정 차단 훅.
+- `.claude/rules/*.md` — 아키텍처/코드스타일/git/API 문서 동기화 규칙. `git-workflow.md.template`는 언어 중립적이지만 린트/테스트 명령 플레이스홀더 2개만 치환하면 그대로 사용 가능. `api-docs-sync.md.template`는 백엔드 API가 있는 프로젝트에서, 백엔드 API 변경 시 관련 문서를 같은 PR에서 함께 업데이트하도록 강제한다.
+- `.claude/skills/verify/SKILL.md.template` — CI와 동일한 순서로 로컬 검증.
+- `.claude/skills/scaffold-module/SKILL.md.template` — 템플릿 모듈을 복사해 새 기능을 만드는 절차 (아키텍처에 맞게 재작성 필요).
+- `.claude/agents/code-reviewer.md.template` — 프로젝트 고유 컨벤션 리뷰 서브에이전트.
+- `.github/workflows/ci.yaml.template` — format → lint → test 3단계 CI.
+- `.github/PULL_REQUEST_TEMPLATE.md` — 언어 중립적이라 그대로 사용 가능.
+- `docs/CLAUDE_CODE.md.template` — 위 네 층이 어떻게 맞물려 자동으로 돌아가는지 팀원에게 설명하는 문서.
+- `docs/RULE_APPLICATION_ORDER.md.template` — 위 네 층이 세션 시작 → 코딩 → 커밋 전 → PR → CI 중 어느 시점에, 어떤 순서로 발동되는지 정리한 문서. 프론트/서버/DB/인프라가 레이어로 분리된 프로젝트라면 확장하는 방법도 포함.
+
 ## 적용 방법
 
 1. 이 저장소의 파일을 새 프로젝트 루트에 복사한다 (`.template`/`.example` 접미사 포함 파일 전체).
@@ -59,19 +76,3 @@ Claude Code는 다음 네 가지 층으로 저장소별 작업 방식을 학습�
 | `{{TEMPLATE_MODULE_PATH}}` | 새 모듈 작성 시 복사할 템플릿 모듈 경로 | `modules/example/` |
 | `{{REVIEWER_AGENT_NAME}}` | 리뷰 서브에이전트 이름 (스택에 맞게) | `nest-reviewer` |
 | `{{API_DOC_PATH}}` | 백엔드 API 변경 시 함께 갱신해야 하는 API 문서 경로 | `docs/API.md` (또는 Swagger UI 경로) |
-
-## 파일별 역할
-
-- `CLAUDE.md.template` — 매 세션 자동 로드되는 최상위 가이드 (명령어, 아키텍처 요약).
-- `CONTRIBUTING.md.template` — 브랜치/커밋/PR 규칙 (사람 + Claude 공용).
-- `MEMORY.md`, `ERRORS.md` — 코드/git 히스토리로 알 수 없는 맥락과 재발 에러를 쌓는 빈 템플릿. 내용 자체는 프로젝트 중립적이라 치환 없이 그대로 복사.
-- `.claude/settings.json.template` — 팀 공유 훅/권한 설정.
-- `.claude/settings.local.json.example` — 개인용 권한 오버라이드 예시 (`.gitignore` 대상).
-- `.claude/hooks/*.sh.template` — 저장 시 자동 포맷 / 생성 파일 수정 차단 훅.
-- `.claude/rules/*.md` — 아키텍처/코드스타일/git/API 문서 동기화 규칙. `git-workflow.md.template`는 언어 중립적이지만 린트/테스트 명령 플레이스홀더 2개만 치환하면 그대로 사용 가능. `api-docs-sync.md.template`는 백엔드 API가 있는 프로젝트에서, 백엔드 API 변경 시 관련 문서를 같은 PR에서 함께 업데이트하도록 강제한다.
-- `.claude/skills/verify/SKILL.md.template` — CI와 동일한 순서로 로컬 검증.
-- `.claude/skills/scaffold-module/SKILL.md.template` — 템플릿 모듈을 복사해 새 기능을 만드는 절차 (아키텍처에 맞게 재작성 필요).
-- `.claude/agents/code-reviewer.md.template` — 프로젝트 고유 컨벤션 리뷰 서브에이전트.
-- `.github/workflows/ci.yaml.template` — format → lint → test 3단계 CI.
-- `.github/PULL_REQUEST_TEMPLATE.md` — 언어 중립적이라 그대로 사용 가능.
-- `docs/CLAUDE_CODE.md.template` — 위 네 층이 어떻게 맞물려 자동으로 돌아가는지 팀원에게 설명하는 문서.
