@@ -16,10 +16,16 @@
 1. `CLAUDE.md` — 빌드/테스트/린트 명령, 아키텍처 요약
 2. `.claude/rules/architecture.md` — 레이어링 강제 규칙
 3. `.claude/rules/code-style.md` — 린트 규칙
-4. `.claude/rules/git-workflow.md` — 브랜치/커밋/PR 규칙
-5. `.claude/rules/api-docs-sync.md` — API 변경 시 문서 동기화 규칙
+4. `.claude/rules/git-workflow.md` — 판단이 필요한 git 규칙 (형식 검사는 훅이 담당)
 
-→ 이 시점부터 아래 모든 단계에서 이 규칙들이 배경으로 계속 적용됩니다.
+로드되는 것은 `CLAUDE.md`와 **거기서 `@`로 import한 파일뿐**입니다. `.claude/rules/`에
+파일을 추가해도 `CLAUDE.md`에 `@` 한 줄을 넣지 않으면 로드되지 않습니다. 실제로 뭐가
+로드됐는지는 `/context`로 확인하세요.
+
+`MEMORY.md`/`ERRORS.md`와 스킬 본문은 이 시점에 로드되지 **않습니다** — 매 턴 과금되는
+자리를 비워두기 위한 의도적인 설계입니다 (`docs/CLAUDE_CODE.md`의 "어디에 둘 것인가").
+
+→ 이 시점부터 아래 모든 단계에서 위 규칙들이 배경으로 계속 적용됩니다.
 
 ## 1. 새 기능/모듈 작업 시작 시
 
@@ -35,21 +41,25 @@
 - 저장 즉시 **format-on-save hook**이 자동 실행됩니다 (사람 개입 없음).
 - 생성 파일(`{{GENERATED_DIR_PATTERN}}`)을 수정하려 하면 **block-generated-edit hook**이
   차단합니다.
+- 디버깅이 필요해지면 `ERRORS.md`를 증상 키워드로 grep합니다 (전체를 읽지 않음).
 
 ## 3. 변경 완료 후, 커밋 전
 
-1. 백엔드 API를 건드렸다면 `api-docs-sync.md` 규칙에 따라 `{{API_DOC_PATH}}`를 같은 작업
-   안에서 함께 갱신해야 합니다.
-2. Claude가 필요하다고 판단하거나 "리뷰해줘"라고 요청하면 **`{{REVIEWER_AGENT_NAME}}` subagent**가
-   레이어링 위반/컨벤션 위반을 점검합니다.
+1. 백엔드 API를 건드렸다면 **api-docs-sync skill**이 발동해 `{{API_DOC_PATH}}`를 같은 작업
+   안에서 함께 갱신합니다. API를 건드리지 않은 작업에서는 이 절차가 로드되지 않습니다.
+2. 변경이 여러 파일에 걸치거나 새 모듈이 추가됐을 때, 또는 "리뷰해줘"라고 요청하면
+   **`{{REVIEWER_AGENT_NAME}}` subagent**가 레이어링 위반/컨벤션 위반을 점검합니다.
+   파일 한두 개짜리 변경은 위임하지 않는 편이 쌉니다.
 3. `/verify` skill로 CI와 동일한 순서(포맷 체크 → 린트 → 테스트)를 로컬에서 재현해
    병합 전 실패를 미리 잡습니다.
 
 ## 4. 커밋 / PR
 
-- `git-workflow.md`의 브랜치명·커밋 메시지(Conventional Commits) 규칙 적용
-- PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md` 사용
-- PR 하나 = 리뷰 가능한 단위 하나, 최소 1명 승인 필요
+- **guard-git hook**이 `git` 명령을 가로채 기계적으로 차단합니다 (프롬프트 개입 없음):
+  `main`/`master` 직접 push, 규약에 맞지 않는 브랜치명, Conventional Commits가 아닌 커밋 메시지.
+- 판단이 필요한 부분(PR 하나 = 리뷰 가능한 단위 하나, target branch 선택)은
+  `git-workflow.md` 규칙으로 남아 있습니다.
+- PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md` 사용, 최소 1명 승인 필요
 
 ## 5. PR 병합 전 — 원격, 자동 (`.github/workflows/ci.yaml`)
 
@@ -65,7 +75,8 @@ format check → {{LINT_CMD}} → {{TEST_CMD}}
 
 특정 단계에 묶여 있지 않고 작업 전반에 걸쳐 있습니다.
 
-- 세션 시작 시 읽어서 "왜 지금 이 상태인지" 파악
+- 필요할 때 **grep해서 해당 부분만** 읽습니다. 자동 로드되지 않으며, 계속 자라는 문서라
+  `CLAUDE.md`에서 `@`로 import하지도 않습니다.
 - 코드/git 히스토리로 알 수 없는 결정이나 재발 에러가 생기면 그때그때 기록
 
 ## 레이어가 여러 개일 때 (프론트/서버/DB/인프라 분리 프로젝트)

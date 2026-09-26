@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# PreToolUse hook (Bash): enforce the deterministic parts of .claude/rules/git-workflow.md.
+#
+# Why a hook and not a prompt rule: these three checks need no judgement, so paying
+# for them as always-loaded prompt text on every turn is waste. A hook costs zero
+# tokens and, unlike a rule, is enforced 100% of the time.
+#
+# Enforced here:  no direct push to main/master, branch naming, Conventional Commits.
+# Left to the rule file: anything needing judgement (e.g. "one PR = one reviewable unit").
+#
+# Parses hook stdin JSON with shell expansion only (no jq/python dependency) for
+# portability. Fails open: anything it cannot parse confidently is allowed through.
+
+input=$(cat)
+
+case "$input" in
+  *'"command"'*) ;;
+  *) exit 0 ;;
+esac
+
+# Isolate tool_input.command: drop everything up to the key, then cut at the next
+# sibling key. Backslashes are then stripped so the JSON-escaped \" around a commit
+# message reads as a plain quote. git commands do not meaningfully contain backslashes.
+cmd=${input#*'"command"'}
+cmd=${cmd%%'","description":'*}
+cmd=${cmd%%'","timeout":'*}
+cmd=$(printf '%s' "$cmd" | tr -d '\134' | tr '\n' ' ')
+
+case "$cmd" in
+  *git*) ;;
+  *) exit 0 ;;
+esac
+
+deny() {
+  # JSON 문자열에 넣기 전에 따옴표/역슬래시를 제거한다 (이스케이프보다 단순하고 안전).
+  escaped=$(printf '%s' "$1" | tr -d '\042\134')
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$escaped"
+  exit 0
+}
+
+# 1. main/master는 PR로만 병합한다 — 직접 push 차단.
+if printf '%s' "$cmd" | grep -qE '(^|[^a-zA-Z0-9_-])git[[:space:]]+push'; then
+  if printf '%s' "$cmd" | grep -qE '(^|[[:space:]:])(main|master)([[:space:]]|:|$)'; then
+    deny "git-workflow: main/master로 직접 push할 수 없습니다. develop을 target으로 PR을 여세요."
+  fi
+  # 명시적 refspec이 없으면 현재 브랜치로 push된다.
+  branch=$(git -C "${CLAUDE_PROJECT_DIR:-.}" rev-parse --abbrev-ref HEAD 2>/dev/null)
+  case "$branch" in
+    main|master)
+      deny "git-workflow: 현재 브랜치가 ${branch}입니다. 직접 push할 수 없으니 feature/fix 브랜치로 분기한 뒤 PR을 여세요."
+      ;;
+  esac
+fi
+
+# 2. 브랜치명 규약.
+newbr=$(printf '%s' "$cmd" \
+  | grep -oE 'git[[:space:]]+(checkout[[:space:]]+-b|switch[[:space:]]+-c)[[:space:]]+[^[:space:];&|]+' \
+  | head -1 \
+  | awk '{print $NF}')
+if [ -n "$newbr" ]; then
+  if ! printf '%s' "$newbr" | grep -qE '^((feature|fix)/[0-9]+-[a-z0-9._-]+|chore/[a-z0-9._-]+|release/[A-Za-z0-9._-]+|develop)$'; then
+    deny "git-workflow: 브랜치명 '${newbr}'이(가) 규약에 맞지 않습니다. feature/{issue}-{desc}, fix/{issue}-{desc}, chore/{desc}, release/{version} 중 하나를 사용하세요."
+  fi
+fi
+
+# 3. Conventional Commits. -m 뒤 첫 따옴표 구간(= subject)만 검사한다.
+#    -F/heredoc으로 메시지를 넘기면 매치되지 않고 그대로 통과한다(fail-open).
+if printf '%s' "$cmd" | grep -qE '(^|[^a-zA-Z0-9_-])git[[:space:]]+commit'; then
+  msg=$(printf '%s' "$cmd" | sed -n "s/.*-m[[:space:]]*[\"']\([^\"']*\).*/\1/p" | head -1)
+  if [ -n "$msg" ]; then
+    if ! printf '%s' "$msg" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf)(\([a-z0-9._/-]+\))?: [a-z].*[^.]$'; then
+      deny "git-workflow: 커밋 메시지 '${msg}'이(가) Conventional Commits 형식이 아닙니다. <type>(<scope>): <subject> — type은 feat|fix|docs|style|refactor|test|chore|perf, subject는 명령형·소문자 시작·마침표 없이."
+    fi
+  fi
+fi
+
+exit 0

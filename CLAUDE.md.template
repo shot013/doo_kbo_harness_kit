@@ -1,6 +1,9 @@
 # CLAUDE.md
 
-이 파일은 이 저장소에서 작업하는 Claude Code(claude.ai/code)에게 제공되는 가이드입니다.
+이 저장소에서 작업하는 Claude Code(claude.ai/code)를 위한 가이드입니다.
+
+이 파일과 아래에서 import하는 규칙은 **매 세션·매 턴 컨텍스트에 들어가는 고정비**입니다.
+항상 필요한 내용만 두세요. 배치 기준은 `docs/CLAUDE_CODE.md`의 "어디에 둘 것인가"를 참고하세요.
 
 ## 명령어
 
@@ -14,42 +17,30 @@
 {{TEST_NAME_CMD}} # 이름으로 단일 테스트 실행
 ```
 
-CI(`.github/workflows/ci.yaml`)는 `main`/`develop`으로의 모든 PR/push에서 포맷 체크 → `{{LINT_CMD}}` → `{{TEST_CMD}}` 순으로 실행합니다. 병합 전 세 가지 모두 로컬에서 통과해야 합니다.
+CI(`.github/workflows/ci.yaml`)는 `main`/`develop`으로의 모든 PR/push에서 포맷 체크 → `{{LINT_CMD}}` → `{{TEST_CMD}}` 순으로 실행합니다. 병합 전 세 가지 모두 로컬에서 통과해야 합니다 (`/verify`).
 
 ## 아키텍처
 
 {{ARCHITECTURE_SUMMARY}}
 
-<!--
-doo_kbo_scraping_server 예시:
-Modular Nest.js Architecture. DI는 Nest container, HTTP 진입점은 controllers, 핵심 로직은 services, 데이터 접근은 repositories/providers를 사용합니다.
+`{{SRC_DIR}}{{TEMPLATE_MODULE_PATH}}`은 실제로 동작하는 참고 구현체이자 새 module을 만들 때 복사할 템플릿입니다. 새 module을 추가하는 절차는 `/scaffold-module` 스킬에 있습니다.
 
-{{SRC_DIR}}
-  main.ts / app.module.ts   # 앱 엔트리포인트
-  common/                    # 공통 유틸, 필터, 인터셉터, Exception
-  modules/{name}/
-    application/             # controllers, dto, usecases
-    domain/                  # entities, repositories(추상)
-    infrastructure/          # repositories(구현), providers
+## 항상 적용되는 규칙
 
-데이터 흐름과 레이어링 규칙은 실제 프로젝트에 맞게 다시 쓰세요.
--->
+@.claude/rules/architecture.md
+@.claude/rules/code-style.md
+@.claude/rules/git-workflow.md
 
-`{{SRC_DIR}}modules/example/`(또는 그에 준하는 위치)은 실제로 동작하는 참고 구현체이자 새 module을 만들 때 복사할 템플릿입니다.
+## 작업 맥락 — 필요할 때만 읽기
 
-**새 module 체크리스트** (`docs/ARCHITECTURE.md` 참고):
-1. 템플릿 모듈을 새 이름으로 복사한다.
-2. 도메인/핵심 로직부터 작성한다.
-3. infrastructure 레이어에서 인터페이스를 구현한다.
-4. application 레이어에서 controller/service를 연결한다.
-5. app.module 또는 feature module에 새 모듈을 등록한다.
+`MEMORY.md`(결정과 그 이유)와 `ERRORS.md`(재발 에러)는 계속 자라는 문서라 import하지 않습니다.
 
-## 주요 린트 규칙
+- 디버깅을 시작하기 전에 `ERRORS.md`를 **증상 키워드로 grep**한다. 전체를 읽지 않는다.
+- "왜 지금 이 상태인지"가 판단에 필요하면 `MEMORY.md`에서 해당 섹션만 읽는다.
+- 코드나 git 히스토리로 알 수 없는 결정을 내렸거나 원인 파악에 시간이 걸린 에러를 해결했다면, 각 문서의 작성 규칙에 따라 기록한다.
 
-{{LINT_RULE_SUMMARY}}
+## 규칙을 수정할 때
 
-## 협업 (`CONTRIBUTING.md`)
-
-- 브랜치: `main` (보호됨, PR 전용), `develop` (통합), `feature/{issue}-{desc}`, `fix/{issue}-{desc}`, `chore/{desc}`, `release/{version}`.
-- 커밋: Conventional Commits — `<type>(<scope>): <subject>`, 명령형, 소문자 시작, 마침표 없음. 타입: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`.
-- PR 하나 = 리뷰 가능한 단위 하나; 최소 1명 승인 필요; squash merge; PR 열기 전 로컬에서 `{{LINT_CMD}}`와 `{{TEST_CMD}}`가 통과해야 함.
+규칙 파일(`CLAUDE.md`, `.claude/rules/*`)을 **작업 도중에 고치지 마세요**. 이 파일들은 프롬프트
+캐시의 프리픽스라, 세션 중간에 바뀌면 그 이후 모든 턴이 캐시 미스가 됩니다. 규칙 정비는
+별도 세션에서 몰아서 하세요.

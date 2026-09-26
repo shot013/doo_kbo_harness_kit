@@ -1,0 +1,21 @@
+---
+name: api-docs-sync
+description: Update the API documentation that a backend change invalidates, in the same PR as the code. Use when adding, removing, or changing an HTTP endpoint, a request/response schema or DTO, or an auth/permission rule in {{PROJECT_NAME}}.
+---
+
+# API 문서 동기화
+
+백엔드 API를 변경했다면 코드만 바꾸고 끝내지 않는다 — 같은 PR 안에서 관련 문서를 함께
+업데이트한다. 문서 업데이트를 별도 PR/티켓으로 미루지 않는다.
+
+다음을 확인하고, 영향받는 항목이 있으면 갱신한다:
+
+- {{API_DOC_PATH}} (OpenAPI/Swagger 스펙, API 레퍼런스 문서 등)
+- `CLAUDE.md`의 아키텍처 요약 — 엔드포인트·모듈 구조가 바뀌었다면
+- `docs/ARCHITECTURE.md` — 레이어링이나 데이터 흐름이 바뀌었다면
+- README나 클라이언트(프론트엔드) 쪽과 공유하는 API 사용 예시
+
+프로젝트별 추가 항목(스펙 데코레이터, Postman collection, CHANGELOG 등)은
+`docs/TEMPLATE_EXAMPLES.md` 참고.
+
+문서 업데이트 없이 API 변경만 포함된 PR은 리뷰에서 반려한다.
