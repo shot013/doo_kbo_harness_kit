@@ -1,22 +1,17 @@
 ---
 name: scaffold-module
-description: Scaffold a new module/feature in {{PROJECT_NAME}} by copying the template module (see {{SRC_DIR}}{{TEMPLATE_MODULE_PATH}}) and wiring it into the entry point/router. Use when asked to add, create, or scaffold a new feature or module.
+description: Scaffold a new module/feature in {{PROJECT_NAME}} by copying the template module ({{SRC_DIR}}{{TEMPLATE_MODULE_PATH}}) and wiring it into the entry point/router. Use when asked to add, create, or scaffold a new feature or module.
 ---
 
 # 새 모듈 추가
 
-<!--
-doo_kbo_scraping_server 예시 (Modular Nest.js):
+`.claude/rules/architecture.md`의 의존 방향을 지키면서 아래 순서로 진행한다.
+작성 예시는 `docs/TEMPLATE_EXAMPLES.md` 참고.
 
-1. `{{SRC_DIR}}modules/example/`을 `{{SRC_DIR}}modules/{모듈명}/`으로 복사한다. `{모듈명}`은 kebab-case 또는 camelCase를 사용한다.
-2. `domain/entities`, `domain/repositories`부터 새 도메인에 맞게 다시 작성한다.
-   - `domain`은 프레임워크나 `application`/`infrastructure`를 import하지 않는다.
-3. `infrastructure/repositories`와 `infrastructure/providers`에서 domain 인터페이스를 구현한다.
-4. `application/controllers`와 `application/services`에서 모듈의 진입점과 비즈니스 흐름을 연결한다.
-5. `app.module.ts` 또는 상위 module에 새 모듈을 등록한다.
+1. `{{SRC_DIR}}{{TEMPLATE_MODULE_PATH}}`를 새 모듈 이름으로 복사한다.
+2. 도메인/핵심 로직 레이어부터 새 도메인에 맞게 다시 작성한다.
+3. infrastructure 레이어에서 도메인 인터페이스를 구현한다.
+4. application 레이어에서 진입점과 비즈니스 흐름을 연결한다.
+5. 엔트리포인트(또는 상위 module)에 새 모듈을 등록한다.
 6. 복사 원본 이름이 새 파일에 남아있지 않은지 확인한다.
-7. `{{LINT_CMD}}`와 `{{TEST_CMD}}`를 실행해 통과하는지 확인한다 (verify 스킬 참고).
-
-이 파일은 플레이스홀더 치환만으로 완성되지 않는다 — 실제 템플릿 모듈 경로와
-레이어 구조에 맞게 절차를 다시 작성할 것. 세부 규칙은 `.claude/rules/architecture.md`를 따른다.
--->
+7. `/verify`로 포맷·린트·테스트를 통과시킨다.
