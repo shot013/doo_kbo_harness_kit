@@ -1,0 +1,114 @@
+# 템플릿 작성 예시 모음
+
+`CLAUDE.md`, `.claude/rules/*`, `.claude/skills/*`, `.claude/agents/*`는 **Claude Code의
+컨텍스트에 실제로 들어가는 파일**입니다. HTML 주석(`<!-- -->`)도 예외가 아닙니다 —
+주석은 사람에게만 안 보일 뿐, 모델에게는 그대로 전달되고 토큰으로 과금됩니다.
+
+그래서 "이 파일을 어떻게 채우면 되는지" 보여주는 예시는 전부 이 문서로 모았습니다.
+이 문서는 어디에서도 `@`로 import하지 않으므로 상시 비용이 0입니다.
+
+킷을 새 프로젝트에 적용할 때 이 문서를 참고해 각 파일을 채운 뒤, **이 문서 자체는
+삭제하거나 그대로 두세요** — 어느 쪽이든 세션 토큰에는 영향이 없습니다.
+
+---
+
+## `CLAUDE.md` — 아키텍처 요약
+
+`doo_kbo_scraping_server` 예시:
+
+> Modular Nest.js Architecture. DI는 Nest container, HTTP 진입점은 controllers,
+> 핵심 로직은 services, 데이터 접근은 repositories/providers를 사용합니다.
+
+```
+{{SRC_DIR}}
+  main.ts / app.module.ts   # 앱 엔트리포인트
+  common/                    # 공통 유틸, 필터, 인터셉터, Exception
+  modules/{name}/
+    application/             # controllers, dto, usecases
+    domain/                  # entities, repositories(추상)
+    infrastructure/          # repositories(구현), providers
+```
+
+데이터 흐름과 레이어링 규칙은 실제 프로젝트에 맞게 다시 쓰세요.
+
+---
+
+## `.claude/rules/architecture.md` — 레이어링 강제 규칙
+
+`doo_kbo_scraping_server` 예시 (Modular Nest.js):
+
+- `{{SRC_DIR}}modules/{module}/domain/`은 Nest 프레임워크, `application/`, `infrastructure/`를 import하지 않는다. 위반하는 코드를 작성하지 않는다.
+- 새 module은 템플릿 모듈을 복사해서 시작한다. `domain → infrastructure → application` 순서로 작성한다.
+- 에러는 infrastructure layer에서 예외를 던지고, `infrastructure/repositories`에서 적절한 예외/응답 형태로 변환해 상위 레이어로 전달한다. domain/application에서 예외를 직접 처리하지 않는다.
+- DI/Provider는 Nest container에 등록된 방식만 사용한다. 다른 상태관리 라이브러리를 추가하지 않는다.
+- 새 module 추가 시 app.module 또는 상위 module에 반드시 등록한다.
+
+이 파일은 플레이스홀더 치환만으로 완성되지 않습니다 — 프로젝트의 실제 레이어 이름,
+에러 처리 방식, 강제하고 싶은 의존 방향을 반영해 다시 작성하세요.
+
+**분량 주의**: 이 파일은 매 턴 과금되는 자리에 있습니다. 규칙은 10줄 이내로 유지하고,
+"왜 그런지"에 대한 설명은 `docs/ARCHITECTURE.md`로 보내세요.
+
+---
+
+## `.claude/rules/code-style.md` — 린트 규칙 요약
+
+`doo_kbo_app` 예시 (`analysis_options.yaml` 기준):
+
+- 모든 함수/메서드에 반환 타입을 명시한다 (`always_declare_return_types`).
+- `print()` 대신 로깅을 쓰거나 디버그 코드를 남기지 않는다 (`avoid_print`).
+- import는 상대 경로로 작성한다 (`prefer_relative_imports`).
+- 문자열은 작은따옴표를 쓴다 (`prefer_single_quotes`).
+- 가능하면 `const` 생성자/선언을 쓴다.
+- 지역 변수는 재할당하지 않는 한 `final`로 선언한다.
+- 여러 줄 인자/리스트 끝에 trailing comma를 붙인다.
+- `Future`를 반환하는 호출은 `await`하거나 명시적으로 무시한다.
+
+**분량 주의**: 린터가 자동으로 잡아주는 규칙을 여기 다시 적을 필요는 없습니다.
+포맷터/린터가 자동 수정(`--fix`)해주는 항목은 빼고, **모델이 처음부터 그렇게 써야만
+하는 항목**(설계 성격의 규칙)만 남기는 것이 비용 대비 효과가 가장 큽니다.
+
+---
+
+## `.claude/skills/api-docs-sync/SKILL.md` — API 문서 동기화
+
+`doo_kbo_scraping_server` 예시:
+
+- Controller의 Swagger 데코레이터(`@ApiOperation`, `@ApiResponse`, `@ApiProperty` 등)를
+  실제 동작과 일치하도록 갱신한다.
+- DTO 필드가 추가/변경되면 관련 예시 payload와 Postman collection(있다면)도 함께 수정한다.
+- Breaking change(응답 형태 변경, 필드 삭제 등)는 CHANGELOG 또는 릴리즈 노트에도 남긴다.
+
+---
+
+## `.claude/skills/scaffold-module/SKILL.md` — 새 모듈 스캐폴딩
+
+`doo_kbo_scraping_server` 예시 (Modular Nest.js):
+
+1. `{{SRC_DIR}}modules/example/`을 `{{SRC_DIR}}modules/{모듈명}/`으로 복사한다. `{모듈명}`은 kebab-case 또는 camelCase를 사용한다.
+2. `domain/entities`, `domain/repositories`부터 새 도메인에 맞게 다시 작성한다.
+   - `domain`은 프레임워크나 `application`/`infrastructure`를 import하지 않는다.
+3. `infrastructure/repositories`와 `infrastructure/providers`에서 domain 인터페이스를 구현한다.
+4. `application/controllers`와 `application/services`에서 모듈의 진입점과 비즈니스 흐름을 연결한다.
+5. `app.module.ts` 또는 상위 module에 새 모듈을 등록한다.
+6. 복사 원본 이름이 새 파일에 남아있지 않은지 확인한다.
+7. `{{LINT_CMD}}`와 `{{TEST_CMD}}`를 실행해 통과하는지 확인한다 (verify 스킬 참고).
+
+이 파일은 플레이스홀더 치환만으로 완성되지 않습니다 — 실제 템플릿 모듈 경로와
+레이어 구조에 맞게 절차를 다시 작성하세요. 세부 규칙은 `.claude/rules/architecture.md`를 따릅니다.
+
+---
+
+## `.claude/agents/{{REVIEWER_AGENT_NAME}}.md` — 리뷰 체크리스트
+
+`doo_kbo_scraping_server` 예시 항목 (실제 아키텍처에 맞게 다시 쓸 것):
+
+1. **레이어링** — domain 레이어는 Nest 프레임워크, application, infrastructure 어느 것도 import하면 안 됩니다. 이런 import가 있으면 즉시 지적합니다.
+2. **에러 처리** — infrastructure layer 코드는 예외를 던져야 하며, 이를 적절한 예외/응답 형태로 변환하는 곳은 infrastructure/repositories 또는 exception filter에서 처리해야 합니다.
+3. **DI/Provider** — application 레이어는 Nest container에 등록된 provider만 사용해야 합니다.
+4. **모듈 등록** — 새 module이 추가되면 app.module 또는 상위 module에 등록되어 있는지 확인합니다.
+5. **린트 규칙** — `{{LINT_CMD}}`가 개념적으로 잡아낼 위반 사항을 눈으로 확인합니다.
+6. **템플릿 이탈** — 새 모듈이 추가됐다면 템플릿 모듈 구조를 따랐는지 확인합니다.
+
+서브에이전트 본문은 자체 컨텍스트에서만 로드되므로 부모 세션의 상시 비용에는
+포함되지 않습니다. 다만 `description`은 항상 상주하므로 짧게 유지하세요.

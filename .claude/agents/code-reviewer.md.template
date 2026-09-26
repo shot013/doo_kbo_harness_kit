@@ -1,6 +1,6 @@
 ---
 name: {{REVIEWER_AGENT_NAME}}
-description: Reviews changes in {{PROJECT_NAME}} against this project's architecture and lint conventions. Use proactively after writing or editing files under {{SRC_DIR}}, or when asked to review a diff before opening a PR. Checks layering violations, error handling conventions, and lint rules — does not run tests itself.
+description: Reviews changes in {{PROJECT_NAME}} against this project's architecture and lint conventions. Use when a change spans several files under {{SRC_DIR}} or adds a new module, or when asked to review a diff before opening a PR — a one- or two-file edit is cheaper to review inline. Checks layering violations, error handling conventions, and lint rules; does not run tests itself.
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---
@@ -9,16 +9,7 @@ model: inherit
 
 일반적인 스타일이 아니라 이 프로젝트 고유의 규칙으로 변경 파일을 점검하세요:
 
-<!--
-doo_kbo_scraping_server 예시 항목 (실제 아키텍처에 맞게 다시 쓸 것):
-
-1. **레이어링** — domain 레이어는 Nest 프레임워크, application, infrastructure 어느 것도 import하면 안 됩니다. 이런 import가 있으면 즉시 지적합니다.
-2. **에러 처리** — infrastructure layer 코드는 예외를 던져야 하며, 이를 적절한 예외/응답 형태로 변환하는 곳은 infrastructure/repositories 또는 exception filter에서 처리해야 합니다.
-3. **DI/Provider** — application 레이어는 Nest container에 등록된 provider만 사용해야 합니다.
-4. **모듈 등록** — 새 module이 추가되면 app.module 또는 상위 module에 등록되어 있는지 확인합니다.
-5. **린트 규칙** — `{{LINT_CMD}}`가 개념적으로 잡아낼 위반 사항을 눈으로 확인합니다.
-6. **템플릿 이탈** — 새 모듈이 추가됐다면 템플릿 모듈 구조를 따랐는지 확인합니다.
--->
+검토 항목은 `docs/TEMPLATE_EXAMPLES.md`의 "리뷰 체크리스트" 섹션을 참고해 이 저장소의 실제 아키텍처에 맞게 다시 쓸 것.
 
 변경된 파일을 확인할 때는 `Read`/`Grep`/`Glob`을 사용하세요 (명시적으로 알려주지 않았다면 `Bash`로 `git diff`/`git status`를 실행해서 변경 파일을 찾으세요). `{{LINT_CMD}}`나 `{{TEST_CMD}}`는 직접 실행하지 마세요 — 그건 `verify` 스킬의 역할입니다. 대신 린터/CI가 잡아내지 못하는 것(아키텍처 의도, 레이어링, 에러 처리 구조)에 집중하세요.
 
