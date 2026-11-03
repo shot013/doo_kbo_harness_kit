@@ -24,13 +24,15 @@ Claude Code는 다음 네 가지 층으로 저장소별 작업 방식을 학습�
 
 ## 파일별 역할
 
-- `CLAUDE.md.template` — 매 세션 자동 로드되는 최상위 가이드 (명령어, 아키텍처 요약).
+- `KIT_RULES.md` — **키트 공통 규칙.** 프로젝트와 무관하게 모든 저장소에 똑같이 적용되는 규칙(규칙 배치 기준, `MEMORY.md`/`ERRORS.md` 읽는 법, 규칙 수정 시점, 판단이 필요한 공통 git 규칙). 템플릿이 아니라 그대로 쓰는 파일이며, 각 프로젝트 `CLAUDE.md`의 맨 위에서 `@doo_kbo_harness_kit/KIT_RULES.md`로 import해 **프로젝트 규칙보다 먼저** 적용한다. 프로젝트 파일에는 이 내용을 다시 적지 않는다.
+- `CLAUDE.md.template` — 매 세션 자동 로드되는 최상위 가이드 (키트 규칙 import, 키트와 다른 점, 명령어, 아키텍처 요약).
 - `CONTRIBUTING.md.template` — 브랜치/커밋/PR 규칙 (사람 + Claude 공용).
 - `MEMORY.md`, `ERRORS.md` — 코드/git 히스토리로 알 수 없는 맥락과 재발 에러를 쌓는 빈 템플릿. 내용 자체는 프로젝트 중립적이라 치환 없이 그대로 복사. **계속 자라는 문서이므로 `CLAUDE.md`에서 `@`로 import하지 않는다** — 필요할 때 grep해서 해당 부분만 읽는다.
 - `.claude/settings.json.template` — 팀 공유 훅/권한 설정.
 - `.claude/settings.local.json.example` — 개인용 권한 오버라이드 예시 (`.gitignore` 대상).
 - `.claude/hooks/format-on-save.sh.template` — 저장 시 자동 포맷.
 - `.claude/hooks/block-generated-edit.sh.template` — 생성 파일 수정 차단.
+- `.claude/hooks/check-kit.sh.template` — SessionStart 훅. 프로젝트 루트에 키트(`KIT_RULES.md`)가 없으면 경고를 출력해 Claude가 사용자에게 알리게 한다. `@` import는 파일이 없으면 조용히 건너뛰므로 이 훅이 "키트 규칙이 먼저 적용된다"를 보장한다. 정상일 때는 출력이 없어 비용 0.
 - `.claude/hooks/guard-git.sh.template` — `main`/`master` 직접 push, 브랜치명 규약 위반, Conventional Commits가 아닌 커밋 메시지를 차단. git 규약 중 기계적으로 판정 가능한 부분을 프롬프트가 아니라 훅으로 강제해 상시 토큰 비용을 0으로 만든다. 파싱 실패 시 통과(fail-open).
 - `.claude/rules/*.md` — 매 턴 과금되는 자리. 아키텍처/코드스타일/판단이 필요한 git 규칙만 남긴다. `CLAUDE.md`가 `@`로 명시적으로 import하므로, 규칙 파일을 추가하면 `CLAUDE.md`에도 한 줄 추가해야 한다.
 - `.claude/skills/verify/SKILL.md.template` — CI와 동일한 순서로 로컬 검증.
@@ -45,7 +47,8 @@ Claude Code는 다음 네 가지 층으로 저장소별 작업 방식을 학습�
 
 ## 적용 방법
 
-1. 이 저장소의 파일을 새 프로젝트 루트에 복사한다 (`.template`/`.example` 접미사 포함 파일 전체).
+0. 이 저장소를 새 프로젝트 루트에 `doo_kbo_harness_kit/`로 clone하고 프로젝트의 `.gitignore`에 `doo_kbo_harness_kit/`를 추가한다. `KIT_RULES.md`는 복사하지 않고 이 위치에서 import한다 — 키트를 갱신하면(`git pull`) 모든 프로젝트에 같은 공통 규칙이 적용된다.
+1. 이 저장소의 템플릿 파일을 새 프로젝트 루트에 복사한다 (`.template`/`.example` 접미사 포함 파일 전체).
 2. 아래 플레이스홀더 표를 참고해 프로젝트에 맞는 값으로 전역 치환한다.
 3. `.template` 접미사를 제거하고, `.claude/settings.local.json.example`은
    `.claude/settings.local.json`으로 복사한 뒤 개인 환경에 맞게 수정한다 (이 파일은
