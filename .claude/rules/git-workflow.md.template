@@ -1,10 +1,8 @@
 # Git 워크플로 규칙 (항상 적용)
 
-브랜치명·커밋 메시지 형식·main 직접 push 차단은 `.claude/hooks/guard-git.sh`가 강제하므로
-여기 적지 않는다. 판단이 필요한 것만 남긴다:
+PR base, PR 단위, 커밋 전 검증은 `KIT_RULES.md`의 "git"에 있으므로 여기 적지 않는다. 형식 검사는 `.claude/hooks/guard-git.sh`가 강제한다.
+이 프로젝트에만 해당하는, 판단이 필요한 git 규칙만 남긴다 (없으면 이 파일을 지우고 `CLAUDE.md`의 import도 지운다):
 
-- PR의 기본 target branch는 `develop`. `main`으로의 병합은 release 브랜치에서만.
-- 하나의 PR에는 하나의 리뷰 가능한 단위만 담는다. 여러 기능을 한 PR에 묶지 않는다.
-- 커밋을 만들기 전에 `/verify`로 포맷·린트·테스트를 통과시킨다.
+- (예: PR 링크 생성 방식, 무관한 미커밋 변경 처리 방식)
 
 전체 규약(브랜치 전략, 커밋 타입 목록, PR 승인 규칙)은 `CONTRIBUTING.md` 참고.

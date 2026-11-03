@@ -13,10 +13,12 @@
 
 사람이 아무것도 하지 않아도 Claude Code가 컨텍스트에 이미 로드한 상태로 시작합니다.
 
-1. `CLAUDE.md` — 빌드/테스트/린트 명령, 아키텍처 요약
-2. `.claude/rules/architecture.md` — 레이어링 강제 규칙
-3. `.claude/rules/code-style.md` — 린트 규칙
-4. `.claude/rules/git-workflow.md` — 판단이 필요한 git 규칙 (형식 검사는 훅이 담당)
+1. **`doo_kbo_harness_kit/KIT_RULES.md`** — 키트 공통 규칙. `CLAUDE.md` 맨 위에서 import되어 가장 먼저 적용된다.
+   파일이 없으면 **check-kit hook**(SessionStart)이 경고를 띄운다.
+2. `CLAUDE.md` — 키트와 다른 점, 빌드/테스트/린트 명령, 아키텍처 요약
+3. `.claude/rules/architecture.md` — 레이어링 강제 규칙
+4. `.claude/rules/code-style.md` — 린트 규칙
+5. `.claude/rules/git-workflow.md` — 프로젝트 고유의, 판단이 필요한 git 규칙 (공통 git 규칙은 1번, 형식 검사는 훅)
 
 로드되는 것은 `CLAUDE.md`와 **거기서 `@`로 import한 파일뿐**입니다. `.claude/rules/`에
 파일을 추가해도 `CLAUDE.md`에 `@` 한 줄을 넣지 않으면 로드되지 않습니다. 실제로 뭐가
@@ -57,8 +59,8 @@
 
 - **guard-git hook**이 `git` 명령을 가로채 기계적으로 차단합니다 (프롬프트 개입 없음):
   `main`/`master` 직접 push, 규약에 맞지 않는 브랜치명, Conventional Commits가 아닌 커밋 메시지.
-- 판단이 필요한 부분(PR 하나 = 리뷰 가능한 단위 하나, target branch 선택)은
-  `git-workflow.md` 규칙으로 남아 있습니다.
+- 판단이 필요한 공통 부분(PR 하나 = 리뷰 가능한 단위 하나, target branch 선택)은
+  `KIT_RULES.md`, 프로젝트 고유 부분은 `git-workflow.md` 규칙으로 남아 있습니다.
 - PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md` 사용, 최소 1명 승인 필요
 
 ## 5. PR 병합 전 — 원격, 자동 (`.github/workflows/ci.yaml`)
