@@ -23,3 +23,4 @@
 - PR의 base는 `develop`이다. `main`은 `develop`/`release`에서만 병합받는다.
 - PR 하나 = 리뷰 가능한 단위 하나. 여러 기능을 한 PR에 묶지 않는다.
 - 커밋 전에 `/verify`로 포맷·린트·테스트를 통과시킨다.
+- 커밋 전에 `git fetch origin`으로 base 브랜치와의 충돌을 확인한다. `git log HEAD..origin/develop`에 새 커밋이 있으면 먼저 `develop`을 합쳐(이미 push한 브랜치는 rebase 대신 merge) 충돌을 해결한다. PR을 만들기 전에는 `git merge-tree --write-tree origin/develop HEAD`가 0으로 끝나는지(충돌 없음) 다시 확인한 뒤 만든다.
